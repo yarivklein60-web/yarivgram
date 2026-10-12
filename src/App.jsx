@@ -7,6 +7,8 @@ import Nutrition from '@/pages/Nutrition';
 import Workouts from '@/pages/Workouts';
 import Profile from '@/pages/Profile';
 import Recipes from '@/pages/Recipes';
+import HealthSync from '@/pages/HealthSync';
+import HealthImport from '@/pages/HealthImport';
 import PageNotFound from '@/pages/PageNotFound';
 
 export default function App() {
@@ -21,6 +23,8 @@ export default function App() {
             <Route path="/workouts" element={<Workouts />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/recipes" element={<Recipes />} />
+            <Route path="/health-sync" element={<HealthSync />} />
+            <Route path="/import" element={<HealthImport />} />
             <Route path="*" element={<PageNotFound />} />
           </Route>
         </Routes>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Flame, Timer, ChevronLeft, UtensilsCrossed, Dumbbell, BookOpen } from 'lucide-react';
 import ProgressRing from '@/components/shared/ProgressRing';
 import MacroBar from '@/components/shared/MacroBar';
+import WeeklySummary from '@/components/shared/WeeklySummary';
 import { FoodLog, WorkoutLog } from '@/api/entities';
 import { useUserProfile, todayStr } from '@/hooks/useUserProfile';
 import { greeting } from '@/lib/date';
@@ -96,6 +97,8 @@ export default function Home() {
           </ul>
         )}
       </section>
+
+      <WeeklySummary profile={profile} />
 
       <section className="grid grid-cols-3 gap-3">
         <QuickLink to="/nutrition" icon={UtensilsCrossed} label="רישום ארוחה" />

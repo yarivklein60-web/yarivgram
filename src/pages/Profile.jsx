@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Watch, ChevronLeft } from 'lucide-react';
 import { UserProfile } from '@/api/entities';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useToast } from '@/components/shared/Toast';
@@ -145,6 +147,17 @@ export default function Profile() {
       <button className="btn-primary w-full" disabled={!targets || saving} onClick={save}>
         שמירת פרופיל
       </button>
+
+      <Link to="/health-sync" className="card flex items-center gap-3 active:scale-[0.99] transition">
+        <span className="w-10 h-10 rounded-full bg-protein/10 text-protein flex items-center justify-center">
+          <Watch size={20} />
+        </span>
+        <span className="flex-1">
+          <span className="block font-semibold">חיבור Apple Watch</span>
+          <span className="block text-xs text-muted-foreground">ייבוא קלוריות ודקות אימון מ-Apple Health</span>
+        </span>
+        <ChevronLeft className="text-muted-foreground" />
+      </Link>
     </div>
   );
 }
