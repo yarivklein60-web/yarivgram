@@ -31,7 +31,7 @@ const STEPS = [
 
 export default function HealthSync() {
   const toast = useToast();
-  const template = `${window.location.origin}/import?burned=BURNED&minutes=MINUTES`;
+  const template = `${window.location.origin}${import.meta.env.BASE_URL}import?burned=BURNED&minutes=MINUTES`;
 
   const copy = async () => {
     try {

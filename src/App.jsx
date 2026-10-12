@@ -14,7 +14,7 @@ import PageNotFound from '@/pages/PageNotFound';
 export default function App() {
   return (
     <Toaster>
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <ScrollToTop />
         <Routes>
           <Route element={<Layout />}>

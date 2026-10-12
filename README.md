@@ -60,5 +60,11 @@ src/
 
 ## פריסה
 
-זו אפליקציית SPA — בשרת האחסון צריך להפנות כל נתיב ל-`index.html` (ב-Netlify: `_redirects`, ב-Vercel: rewrites),
-אחרת הקישור `/import` מקיצור הדרך יחזיר 404.
+האפליקציה מתפרסמת אוטומטית ל-GitHub Pages בכל push ל-`main`
+(`.github/workflows/deploy.yml`), בכתובת https://yarivklein60-web.github.io/yarivgram/
+
+הגדרה חד-פעמית: Settings → Pages → Source: **GitHub Actions**.
+
+ה-workflow בונה עם `BASE_PATH=/yarivgram/` ומעתיק את `index.html` ל-`404.html`, כך שגם נתיבים פנימיים
+(כמו `/import` מקיצור הדרך) נטענים. בפריסה לשורש דומיין (Netlify/Vercel) אין צורך ב-`BASE_PATH`,
+אבל יש להגדיר הפניה של כל הנתיבים ל-`index.html`.
