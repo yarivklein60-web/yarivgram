@@ -68,3 +68,7 @@ src/
 ה-workflow בונה עם `BASE_PATH=/yarivgram/` ומעתיק את `index.html` ל-`404.html`, כך שגם נתיבים פנימיים
 (כמו `/import` מקיצור הדרך) נטענים. בפריסה לשורש דומיין (Netlify/Vercel) אין צורך ב-`BASE_PATH`,
 אבל יש להגדיר הפניה של כל הנתיבים ל-`index.html`.
+
+## Yarivify
+
+בתיקייה [`music/`](music/) נמצאת אפליקציה נפרדת — נגן מוזיקה בסגנון Spotify. פרטים והרצה ב-[`music/README.md`](music/README.md).

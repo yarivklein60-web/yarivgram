@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body { @apply bg-base text-white font-sans antialiased; }
+  body { overscroll-behavior: none; }
+  ::selection { background: rgb(34 208 122 / 0.35); }
+}
+
+@layer components {
+  .range {
+    @apply w-full cursor-pointer appearance-none bg-transparent;
+    --pct: 0%;
+  }
+  .range::-webkit-slider-runnable-track {
+    height: 4px; border-radius: 9999px;
+    background: linear-gradient(to right, #fff var(--pct), #4a4a52 var(--pct));
+  }
+  .range:hover::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, #22d07a var(--pct), #4a4a52 var(--pct));
+  }
+  .range::-webkit-slider-thumb {
+    -webkit-appearance: none; height: 12px; width: 12px; margin-top: -4px;
+    border-radius: 9999px; background: #fff; opacity: 0;
+  }
+  .range:hover::-webkit-slider-thumb, .range:focus-visible::-webkit-slider-thumb { opacity: 1; }
+  .range::-moz-range-track { height: 4px; border-radius: 9999px; background: #4a4a52; }
+  .range::-moz-range-progress { height: 4px; border-radius: 9999px; background: #fff; }
+  .range:hover::-moz-range-progress { background: #22d07a; }
+  .range::-moz-range-thumb { height: 12px; width: 12px; border: 0; border-radius: 9999px; background: #fff; }
+
+  .scroll-thin { scrollbar-width: thin; scrollbar-color: #3a3a42 transparent; }
+}
