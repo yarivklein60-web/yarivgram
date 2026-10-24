@@ -4,14 +4,16 @@
 
 @layer base {
   :root {
-    --background: 240 9% 96%;
-    --foreground: 240 6% 10%;
+    /* Palette adapted from workout.cool (MIT): blue #4F8EF7 + green #25CB78 on slate. */
+    --background: 220 20% 96%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --muted: 240 5% 92%;
-    --muted-foreground: 240 4% 46%;
-    --border: 240 6% 88%;
-    --primary: 211 100% 50%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --border: 214 32% 91%;
+    --primary: 218 91% 64%;
     --primary-foreground: 0 0% 100%;
+    --accent: 150 69% 47%;
     --protein: 349 89% 60%;
     --carbs: 36 100% 50%;
     --fat: 271 81% 60%;
@@ -19,12 +21,12 @@
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --background: 240 6% 6%;
-      --foreground: 0 0% 98%;
-      --card: 240 5% 12%;
-      --muted: 240 4% 18%;
-      --muted-foreground: 240 5% 65%;
-      --border: 240 4% 20%;
+      --background: 240 8% 9%;
+      --foreground: 210 40% 98%;
+      --card: 240 1% 14%;
+      --muted: 240 3% 19%;
+      --muted-foreground: 215 20% 65%;
+      --border: 217 19% 24%;
     }
   }
   html, body { @apply bg-background text-foreground font-sans antialiased; }
@@ -33,13 +35,23 @@
 }
 
 @layer components {
-  .card { @apply bg-card rounded-2xl p-4; box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.04); }
+  .card { @apply bg-card rounded-2xl p-4 border border-border; box-shadow: 0 1px 2px rgb(15 23 42 / 0.04); }
   .glass { @apply bg-card/75; backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); }
-  .btn-primary { @apply bg-primary text-primary-foreground rounded-xl px-4 py-3 font-semibold active:scale-[0.98] transition disabled:opacity-50; }
-  .btn-ghost { @apply bg-muted rounded-xl px-4 py-3 font-medium active:scale-[0.98] transition; }
+  .btn-primary { @apply bg-primary text-primary-foreground rounded-xl px-4 py-3 font-bold border border-black/10 shadow-sm active:scale-95 transition-all duration-200 focus:ring-2 focus:ring-primary/40 disabled:opacity-50; }
+  .btn-ghost { @apply bg-muted rounded-xl px-4 py-3 font-bold border border-border active:scale-95 transition-all duration-200; }
   .input { @apply w-full bg-muted rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary/40; }
   .label { @apply text-sm text-muted-foreground mb-1 block; }
-  .chip { @apply px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition; }
+  .chip { @apply px-3 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition border border-border; }
+  .chip-active { @apply text-white border-transparent bg-brand; }
+  .bg-brand { background-image: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent))); }
+  .text-brand { @apply bg-clip-text text-transparent bg-brand; }
+  .hero {
+    @apply rounded-3xl p-5 text-slate-900;
+    background-image: linear-gradient(90deg, #fef2a4, #a6ffed);
+  }
+  @media (prefers-color-scheme: dark) {
+    .hero { @apply text-foreground border border-border; background-image: linear-gradient(90deg, #1d1d24, #142033); }
+  }
 }
 
 @keyframes fade { from { opacity: 0 } to { opacity: 1 } }

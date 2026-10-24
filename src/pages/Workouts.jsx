@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Flame, Timer, Trash2, CheckCircle2 } from 'lucide-react';
 import DateNav from '@/components/shared/DateNav';
 import WorkoutDialog from '@/components/workouts/WorkoutDialog';
+import WorkoutHeatmap from '@/components/workouts/WorkoutHeatmap';
 import { useToast } from '@/components/shared/Toast';
 import { Workout, WorkoutLog } from '@/api/entities';
 import { todayStr } from '@/hooks/useUserProfile';
@@ -45,6 +46,8 @@ export default function Workouts() {
         <Summary icon={Flame} cls="text-carbs" value={burned} label="קק״ל" />
       </section>
 
+      <WorkoutHeatmap refreshKey={logs} />
+
       {logs.length > 0 && (
         <section className="card">
           <h2 className="font-bold mb-1">בוצעו</h2>
@@ -68,11 +71,11 @@ export default function Workouts() {
       )}
 
       <div className="flex gap-2 overflow-x-auto -mx-4 px-4 no-scrollbar">
-        <button onClick={() => setCategory(null)} className={`chip ${!category ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
+        <button onClick={() => setCategory(null)} className={`chip ${!category ? 'chip-active' : 'bg-card'}`}>
           הכל
         </button>
         {WORKOUT_CATEGORIES.map((c) => (
-          <button key={c} onClick={() => setCategory(c)} className={`chip ${category === c ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
+          <button key={c} onClick={() => setCategory(c)} className={`chip ${category === c ? 'chip-active' : 'bg-card'}`}>
             {c}
           </button>
         ))}

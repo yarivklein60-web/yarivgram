@@ -58,11 +58,11 @@ export default function AddFoodDialog({ open, onClose, mealType, date, onAdded }
             <input className="input pr-10" placeholder="חיפוש מזון..." value={query} onChange={(e) => setQuery(e.target.value)} autoFocus />
           </div>
           <div className="flex gap-2 overflow-x-auto pb-3 -mx-5 px-5 no-scrollbar">
-            <button onClick={() => setCategory(null)} className={`chip ${!category ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+            <button onClick={() => setCategory(null)} className={`chip ${!category ? 'chip-active' : 'bg-muted'}`}>
               הכל
             </button>
             {FOOD_CATEGORIES.map((c) => (
-              <button key={c} onClick={() => setCategory(c)} className={`chip ${category === c ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+              <button key={c} onClick={() => setCategory(c)} className={`chip ${category === c ? 'chip-active' : 'bg-muted'}`}>
                 {c}
               </button>
             ))}
