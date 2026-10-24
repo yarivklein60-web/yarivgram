@@ -1,0 +1,1119 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>מעקב יריב</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap">
+<style>
+/* Built from how the top-rated gym trackers actually look: white page, hairline rows,
+   blue for names and actions, green only for done, bold black numerals. */
+:root {
+  --bg: #FFFFFF; --band: #F2F2F7; --field: #F2F2F7;
+  --ink: #000000; --grey: #8E8E93; --line: #E5E5EA;
+  --blue: #007AFF; --green: #34C759; --orange: #FF9500; --red: #FF3B30;
+  --onaccent: #FFFFFF;
+  color-scheme: light;
+  --ui: "Assistant", -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #000000; --band: #0E0E0F; --field: #1C1C1E;
+    --ink: #FFFFFF; --grey: #8E8E93; --line: #2C2C2E;
+    --blue: #0A84FF; --green: #30D158; --orange: #FF9F0A; --red: #FF453A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #000000; --band: #0E0E0F; --field: #1C1C1E;
+  --ink: #FFFFFF; --grey: #8E8E93; --line: #2C2C2E;
+  --blue: #0A84FF; --green: #30D158; --orange: #FF9F0A; --red: #FF453A;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  direction: rtl; background: var(--bg); color: var(--ink); font-family: var(--ui);
+  font-size: 17px; line-height: 1.4; -webkit-font-smoothing: antialiased;
+}
+body::before { content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:30; background:var(--bg); }
+h1,h2,h3 { margin:0; line-height:1.2; text-wrap:balance; }
+p { margin:0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+.n { font-variant-numeric: tabular-nums; }
+
+.app { max-width: 620px; margin: 0 auto; padding-bottom: 48px; }
+.pad { padding-left: max(16px, env(safe-area-inset-left,0px)); padding-right: max(16px, env(safe-area-inset-right,0px)); }
+
+/* nav */
+.nav { position: sticky; top: env(safe-area-inset-top,0px); z-index:20; background: var(--bg);
+       border-bottom: 1px solid var(--line); padding-block: 8px 0; }
+.tabs { display:flex; gap:22px; overflow-x:auto; scrollbar-width:none; }
+.tabs::-webkit-scrollbar { display:none; }
+.tabs button { background:none; border:none; cursor:pointer; padding:8px 0 10px; font-size:16px;
+  font-weight:600; color:var(--grey); white-space:nowrap; border-bottom:2px solid transparent; margin-bottom:-1px; }
+.tabs button[aria-selected="true"] { color: var(--blue); border-bottom-color: var(--blue); }
+
+/* titles */
+h1 { font-size:30px; font-weight:800; letter-spacing:-.5px; padding-top:18px; }
+.sub { font-size:15px; color:var(--grey); padding-top:2px; padding-bottom:16px; }
+.daynav { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:-8px; margin-bottom:8px; }
+.daynav .link { padding:8px 0; font-size:16px; }
+
+/* stat strip */
+.strip { display:flex; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.strip { gap:12px; }
+.strip > div { flex:1; min-width:0; padding:12px 0; }
+.strip .l { font-size:13px; color:var(--grey); }
+.strip .v { overflow-wrap:anywhere; font-size:21px; font-weight:800; letter-spacing:-.3px; font-variant-numeric:tabular-nums; margin-top:1px; }
+.strip .v.o { color: var(--orange); }
+.strip .v.g { color: var(--green); }
+
+/* section */
+.sec { margin-top: 26px; }
+.sech { font-size:13px; color:var(--grey); padding-bottom:7px; display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+.sech b { color: var(--ink); font-weight:600; font-size:13px; }
+.list { border-top:1px solid var(--line); }
+.row { display:flex; align-items:center; gap:13px; padding:13px 0; border-bottom:1px solid var(--line); min-height:52px; }
+.row .tx { flex:1; min-width:0; font-size:17px; }
+.row .tx .s { display:block; font-size:14px; color:var(--grey); margin-top:1px; }
+.row .rt { font-size:17px; color:var(--grey); font-variant-numeric:tabular-nums; }
+
+/* exercise check rows */
+.ex { cursor:pointer; transition:opacity .15s; }
+.ex:active { opacity:.55; }
+.ex .ck { flex:none; width:26px; height:26px; border-radius:999px; border:2px solid var(--line); position:relative; transition:background .18s,border-color .18s; }
+.ex.done .ck { background:var(--green); border-color:var(--green); }
+.ex.done .ck::after { content:""; position:absolute; inset:0; margin:auto; width:6px; height:11px;
+  border:solid var(--onaccent); border-width:0 2.4px 2.4px 0; transform:translateY(-1px) rotate(45deg); }
+.ex.done .tx { color:var(--grey); text-decoration:line-through; text-decoration-color:var(--line); }
+.ex.open { border-bottom-color: transparent; }
+.setbtn { flex:none; background:var(--field); border:none; border-radius:999px; padding:6px 12px; min-height:32px;
+  font-size:14px; font-weight:700; color:var(--blue); cursor:pointer; font-variant-numeric:tabular-nums; }
+.setbtn.has { background:var(--blue); color:var(--onaccent); }
+
+/* set logger */
+.setp { padding:0 0 14px; padding-inline-start:39px; border-bottom:1px solid var(--line); display:flex; flex-direction:column; gap:8px; }
+.setp .prev { font-size:14px; color:var(--grey); }
+.setp .prev b { color:var(--ink); font-weight:600; }
+.setrow { display:grid; grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) 36px; gap:8px; align-items:center; }
+.setrow .ix { font-size:14px; color:var(--grey); font-variant-numeric:tabular-nums; }
+.setrow input { background:var(--field); border:none; border-radius:9px; padding:8px 10px; font-size:17px; width:100%;
+  min-height:40px; font-variant-numeric:tabular-nums; }
+.setrow .x { background:none; border:none; color:var(--grey); font-size:20px; cursor:pointer; min-height:40px; }
+.sethead { display:grid; grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) 36px; gap:8px; font-size:13px; color:var(--grey); }
+.setp .link { padding:6px 0; font-size:16px; align-self:flex-start; }
+
+.title-blue { color: var(--blue); font-weight:700; font-size:20px; }
+.peak { font-size:14px; color:var(--orange); padding-top:10px; }
+
+/* alerts */
+.al { display:flex; gap:12px; padding:13px 0; border-bottom:1px solid var(--line); align-items:flex-start; }
+.al .d { flex:none; width:8px; height:8px; border-radius:999px; background:var(--red); margin-top:8px; }
+.al.ok .d { background:var(--green); }
+.al div { min-width:0; }
+.al strong { display:block; font-size:17px; font-weight:700; }
+.al p { font-size:15px; color:var(--grey); margin-top:2px; }
+
+/* form */
+.fld { padding:12px 0; border-bottom:1px solid var(--line); display:flex; flex-direction:column; gap:7px; }
+.fld > label { font-size:13px; color:var(--grey); }
+.fld input, .fld select, .fld textarea {
+  background:var(--field); border:none; border-radius:9px; padding:11px 12px; font-size:17px; width:100%; min-height:44px;
+}
+.fld input[type=number] { font-variant-numeric:tabular-nums; }
+.fld input:disabled { color:var(--grey); }
+.fld textarea { resize:vertical; min-height:76px; line-height:1.45; }
+.fld textarea.tall { min-height:170px; }
+.three { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px; }
+.scale { display:flex; gap:6px; }
+.scale button { flex:1; min-width:0; min-height:46px; background:var(--field); border:none; border-radius:9px;
+  font-size:17px; font-weight:700; color:var(--ink); cursor:pointer; font-variant-numeric:tabular-nums; transition:background .15s,color .15s; }
+.scale button[aria-pressed="true"] { background:var(--blue); color:var(--onaccent); }
+
+.acts { display:flex; gap:18px; align-items:center; flex-wrap:wrap; padding-top:18px; }
+.btn { background:var(--blue); color:var(--onaccent); border:none; border-radius:10px; padding:13px 26px;
+  font-size:17px; font-weight:700; cursor:pointer; min-height:46px; transition:opacity .15s; }
+.btn:active { opacity:.55; }
+.link { background:none; border:none; color:var(--blue); font-size:17px; cursor:pointer; padding:13px 0; }
+.link.red { color: var(--red); }
+.btn:disabled { opacity:.4; }
+.okmsg { font-size:15px; color:var(--green); font-weight:700; }
+.warn { font-size:15px; color:var(--red); }
+
+/* tables */
+.scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table { border-collapse:collapse; width:100%; font-size:15px; }
+th, td { text-align:right; padding:11px 12px 11px 0; white-space:nowrap; }
+thead th { font-size:13px; color:var(--grey); font-weight:400; border-bottom:1px solid var(--line); }
+thead th.hd { padding:0; }
+thead th.hd button { background:none; border:none; color:var(--blue); font-size:13px; font-weight:600; cursor:pointer;
+  padding:11px 12px 11px 0; font-variant-numeric:tabular-nums; }
+tbody td { border-bottom:1px solid var(--line); }
+td.n, th.n { font-variant-numeric:tabular-nums; }
+/* numbers, signs and "22.5×8" read left to right inside the right-to-left page */
+td.n, .ltr { direction:ltr; unicode-bidi:isolate; text-align:right; }
+tr.now td { font-weight:700; }
+tr.tap { cursor:pointer; } tr.tap:active td { opacity:.5; }
+td.name { color: var(--blue); font-weight:600; }
+td.wrap { white-space:normal; }
+.q { color: var(--grey); }
+.up { color: var(--green); font-weight:700; }
+.dn { color: var(--red); font-weight:700; }
+
+/* charts */
+svg.chart { width:100%; height:auto; display:block; overflow:visible; }
+.pills { display:flex; gap:8px; flex-wrap:wrap; padding:14px 0 4px; }
+.pills button { background:var(--field); border:none; border-radius:999px; padding:8px 15px; font-size:14px;
+  font-weight:600; color:var(--ink); cursor:pointer; min-height:34px; transition:background .15s,color .15s; }
+.pills button[aria-pressed="true"] { background:var(--blue); color:var(--onaccent); }
+.empty { color:var(--grey); font-size:15px; padding:28px 0; text-align:center; }
+.foot { font-size:13px; color:var(--grey); padding-top:22px; }
+
+/* plan editor */
+.wk { margin-top:30px; }
+.wk h2 { font-size:20px; font-weight:800; color:var(--blue); padding-bottom:6px; }
+.hint { font-size:13px; color:var(--grey); }
+@media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+
+<div class="app">
+  <div class="nav pad">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-today" aria-selected="true">היום</button>
+      <button role="tab" id="tab-week" aria-selected="false">השבוע</button>
+      <button role="tab" id="tab-measures" aria-selected="false">מדדים</button>
+      <button role="tab" id="tab-trends" aria-selected="false">מגמות</button>
+      <button role="tab" id="tab-plan" aria-selected="false">תוכנית</button>
+    </div>
+  </div>
+
+  <section class="view pad" id="view-today">
+    <h1 id="todayTitle">היום</h1>
+    <p class="sub" id="todaySub"></p>
+    <div class="daynav">
+      <button class="link" id="prevDay">→ יום קודם</button>
+      <button class="link" id="goToday" hidden>חזרה להיום</button>
+      <button class="link" id="nextDay">יום הבא ←</button>
+    </div>
+
+    <div class="strip" id="topStrip"></div>
+
+    <div class="sec">
+      <div class="sech"><span>אימון היום</span><b id="drillCount"></b></div>
+      <p class="title-blue" id="sName"></p>
+      <p class="sub" id="sSub" style="padding-bottom:6px"></p>
+      <div class="list" id="sDrill"></div>
+      <p class="peak" id="sPeak" hidden></p>
+    </div>
+
+    <div class="sec">
+      <div class="sech"><span>יעדי תזונה</span></div>
+      <div class="strip" id="sFuel"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sech"><span>מצב</span></div>
+      <div class="list" id="alerts"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sech"><span>רישום</span></div>
+      <div class="list">
+        <div class="fld"><label for="entryDate">תאריך</label><input type="date" id="entryDate"></div>
+        <div class="fld"><label for="fWorkout">מה עשית</label>
+          <select id="fWorkout"></select></div>
+        <div class="fld"><label>אנרגיה, מ־1 גרוע עד 5 מצוין</label><div class="scale" id="sEnergy"></div></div>
+        <div class="fld"><div class="three">
+          <div class="fld" style="padding:0;border:none"><label for="fRhr">דופק מנוחה</label>
+            <input type="number" id="fRhr" min="30" max="140" inputmode="numeric" placeholder="—"></div>
+          <div class="fld" style="padding:0;border:none"><label for="fWeight">משקל, ק״ג</label>
+            <input type="number" id="fWeight" min="40" max="140" step="0.1" inputmode="decimal" placeholder="—"></div>
+          <div class="fld" style="padding:0;border:none"><label for="fCarbs">פחמימה, מתוך 6</label>
+            <input type="number" id="fCarbs" min="0" max="6" inputmode="numeric" placeholder="—"></div>
+        </div></div>
+        <div class="fld"><label>איכות שינה</label><div class="scale" id="sSleep"></div></div>
+        <div class="fld"><label>רעב</label><div class="scale" id="sHunger"></div></div>
+        <div class="fld"><label>לחץ</label><div class="scale" id="sStress"></div></div>
+        <div class="fld"><label for="fNote">הערה</label>
+          <textarea id="fNote" placeholder="איך הרגיש, מה כאב, מה השתנה"></textarea></div>
+      </div>
+      <div class="acts">
+        <button class="btn" id="saveDay">שמור</button>
+        <button class="link red" id="clearDay">נקה יום</button>
+        <span class="okmsg" id="savedMsg" hidden>נשמר</span>
+      </div>
+    </div>
+    <p class="foot" id="foot">טוען</p>
+  </section>
+
+  <section class="view pad" id="view-week" hidden>
+    <h1>השבוע</h1>
+    <p class="sub" id="weekTitle"></p>
+    <div class="strip" id="weekSummary"></div>
+    <div class="sec">
+      <div class="scroll"><table id="weekTable"></table></div>
+      <div class="acts">
+        <button class="link" id="prevWeek">שבוע קודם</button>
+        <button class="link" id="nextWeek">שבוע הבא</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="view pad" id="view-measures" hidden>
+    <h1>מדדים</h1>
+    <p class="sub">היקפים בסנטימטרים, בוקר, שריר רפוי. לחץ על תאריך כדי לערוך או למחוק.</p>
+    <div class="scroll"><table id="measTable"></table></div>
+    <div class="acts"><button class="link" id="addMeas">הוסף מדידה</button></div>
+    <div id="measForm" hidden></div>
+    <div class="sec">
+      <div class="sech"><span>ביצועים, אחרי יום מנוחה מלא</span></div>
+      <div class="scroll"><table id="perfTable"></table></div>
+      <div class="acts"><button class="link" id="addPerf">הוסף מדידה</button></div>
+      <div id="perfForm" hidden></div>
+    </div>
+  </section>
+
+  <section class="view pad" id="view-trends" hidden>
+    <h1>מגמות</h1>
+    <p class="sub" id="wStat"></p>
+    <div id="chartWeight"></div>
+    <div class="sec">
+      <div class="sech"><span>התקדמות בתרגילים</span></div>
+      <div class="pills" id="exPick"></div>
+      <p class="sub" id="exStat" style="padding-bottom:4px"></p>
+      <div id="chartEx"></div>
+      <div class="scroll"><table id="exTable"></table></div>
+    </div>
+    <div class="sec">
+      <div class="sech"><span id="rStat">דופק מנוחה</span></div>
+      <div id="chartRhr"></div>
+      <p class="sub" style="padding-top:8px">הקו המקווקו הוא הבסיס ועוד 7. שלושה ימים רצופים מעליו, קח דילואד מוקדם.</p>
+      <div class="fld"><label for="fBaseline">בסיס דופק מנוחה</label>
+        <input type="number" id="fBaseline" min="30" max="100" inputmode="numeric" placeholder="—" style="max-width:180px"></div>
+      <div class="acts"><button class="link" id="calcBaseline">חשב מהנתונים</button></div>
+    </div>
+    <div class="sec">
+      <div class="sech"><span>היקפים</span></div>
+      <div class="pills" id="measPick"></div>
+      <div id="chartMeas"></div>
+    </div>
+    <div class="sec">
+      <div class="sech"><span>ממוצע שבועי</span></div>
+      <div class="pills" id="moodPick"></div>
+      <div id="chartMood"></div>
+    </div>
+  </section>
+
+  <section class="view pad" id="view-plan" hidden>
+    <h1>תוכנית</h1>
+    <p class="sub">כאן משנים את האימונים, את הימים ואת תאריך תחילת המחזור. כל שורה בתיבת התרגילים היא תרגיל אחד.</p>
+    <div class="list">
+      <div class="fld"><label for="plStart">תחילת המחזור, יום ראשון של שבוע בסיס</label>
+        <input type="date" id="plStart" style="max-width:220px"></div>
+    </div>
+    <div id="planForms"></div>
+    <div class="acts">
+      <button class="btn" id="savePlan">שמור תוכנית</button>
+      <button class="link red" id="resetPlan">שחזר תוכנית מקורית</button>
+      <span class="okmsg" id="planMsg" hidden>התוכנית נשמרה</span>
+    </div>
+    <p class="warn" id="planWarn" hidden></p>
+  </section>
+</div>
+
+<script>
+/* Outside claude.ai there is no window.claude. This stand-in keeps the same
+   db API (collection/doc/set/delete/onSnapshot) and stores everything in this
+   browser's localStorage, under "yk.db.<collection>". */
+(function () {
+  if (window.claude && window.claude.use) return;
+  var PFX = "yk.db.", subs = {};
+  function load(c){ try { return JSON.parse(localStorage.getItem(PFX+c)||"{}"); } catch(e){ return {}; } }
+  function save(c,o){ localStorage.setItem(PFX+c, JSON.stringify(o)); }
+  function snapDoc(id,v){ return { id:id, exists:v!==undefined, data:function(){ return v===undefined?undefined:JSON.parse(JSON.stringify(v)); } }; }
+  function snapColl(c){ var o=load(c); return { docs:Object.keys(o).map(function(k){ return snapDoc(k,o[k]); }) }; }
+  function emit(c){ (subs[c]||[]).forEach(function(f){ f(); }); }
+  function listen(c,f){ (subs[c]=subs[c]||[]).push(f); setTimeout(f,0); return function(){ subs[c]=subs[c].filter(function(x){return x!==f;}); }; }
+  function collection(c){
+    return {
+      doc: function(id){
+        return {
+          set: function(v){ var o=load(c); o[id]=JSON.parse(JSON.stringify(v)); save(c,o); emit(c); return Promise.resolve(); },
+          delete: function(){ var o=load(c); delete o[id]; save(c,o); emit(c); return Promise.resolve(); },
+          onSnapshot: function(ok){ return listen(c,function(){ ok(snapDoc(id,load(c)[id])); }); }
+        };
+      },
+      onSnapshot: function(ok){ return listen(c,function(){ ok(snapColl(c)); }); }
+    };
+  }
+  // Another tab saving data refreshes this one.
+  window.addEventListener("storage",function(e){ if(e.key&&e.key.indexOf(PFX)===0) emit(e.key.slice(PFX.length)); });
+  window.claude = { local: true, use: function(name){ return Promise.resolve(name==="db" ? { collection:collection } : null); } };
+})();
+</script>
+<script>
+(function () {
+  "use strict";
+  var DAYS_HE = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+  var CYCLE = [
+    { key:"base", name:"בסיס", note:"נפח רגיל, אותם משקלים." },
+    { key:"add", name:"הוספה", note:"אותו נפח, ועוד 2.5 ק״ג בתרגילי המשקל." },
+    { key:"peak", name:"שיא", note:"סט אחד נוסף באימונים ב׳ ו־ד׳." },
+    { key:"deload", name:"דילואד", note:"חצי סטים, אותם משקלים. בלי פליומטריה ובלי ספרינט מקסימלי." }
+  ];
+  var KEYS = ["a","b","c","d"];
+  var DEFAULT_SCHEDULE = { a:0, b:2, c:4, d:6 };
+  var DEFAULT_WORKOUTS = {
+    a: { name:"אימון א׳", kind:"רגליים ופליומטריה",
+         load:["קפיצה בחבל, 5 דקות","קפיצה לגובה, 3 סטים של 3","ATG סקוואט, 20 ק״ג כל יד",
+               "נורדיק האמסטרינג, 3 סטים של 5","פיסטול סקוואט, 3 סטים של 8 כל רגל",
+               "קלאסטר תאומים, 40 חזרות עם 25 ק״ג","קפיצות קטנות, 50 כל יד עם 10 ק״ג"],
+         deload:["ATG סקוואט","קלאסטר תאומים, 20 חזרות"] },
+    b: { name:"אימון ב׳", kind:"משיכה",
+         load:["4 סופר־סטים: מתח או עליות כוח, 5–7 חזרות","מקבילים, 8–10 חזרות עם 30 ק״ג",
+               "טריפל־סט, 3 סבבים","עמידת ידיים","כפיפות מרפק, 3 סטים של 10–12"],
+         deload:["3 סטים בלבד, בלי עליות כוח","טריפל־סט, 2 סבבים","כפיפות מרפק, 3 סטים של 10"],
+         peak:"בשבוע השיא: 5 סופר־סטים במקום 4." },
+    c: { name:"אימון ג׳", kind:"ספרינטים וקטלבל",
+         load:["3 ספרינטים מתגברים, 100 מ׳","4 ספרינטים 100 מ׳ מקסימום, מנוחה 3 דקות מלאות","60 סבבי קטלבל, 12 ק״ג"],
+         deload:["3 ספרינטים מתגברים בלבד","30 סבבי קטלבל"] },
+    d: { name:"אימון ד׳", kind:"דחיפה",
+         load:["3 סטים: מקבילים 6–8 מקסימום עם 30 ק״ג","יהלום שכיבות סמיכה, 6–8 עם 25 ק״ג",
+               "3 סטים: מתח 5–6 עם 30 ק״ג","פרפר בקייבל קרוס, 12–14 חזרות",
+               "2 סטים: פרפר דאמבלים 8–10 עם 15 ק״ג","לחיצות חזה, 7–9 עם 25 ק״ג","עמידת ידיים"],
+         deload:["2 סטים לכל סופר־סט, אותם משקלים"],
+         peak:"בשבוע השיא: 4 סטים בשני הסופר־סטים הראשונים." }
+  };
+  var MEASURES = [
+    { k:"chest", label:"חזה" }, { k:"waist", label:"בטן" },
+    { k:"quadR", label:"ארבע ראשי ימין" }, { k:"quadL", label:"ארבע ראשי שמאל" },
+    { k:"armR", label:"יד ימין" }, { k:"armL", label:"יד שמאל" },
+    { k:"calfR", label:"תאומים ימין" }, { k:"calfL", label:"תאומים שמאל" }
+  ];
+  var PERF = [
+    { k:"handstand", label:"עמידת ידיים, שניות" }, { k:"explosive", label:"מתח מתפרץ לאגן, חזרות" },
+    { k:"dips", label:"מקבילים עם משקל, ק״ג" }, { k:"pullup", label:"מתח עם משקל, ק״ג" },
+    { k:"diamond", label:"יהלום עם משקל, ק״ג" }, { k:"cluster", label:"קלאסטר תאומים, חזרות עם 20 ק״ג" }
+  ];
+  var SCALES = { sEnergy:"energy", sSleep:"sleep", sHunger:"hunger", sStress:"stress" };
+  var MOODS = [{k:"energy",label:"אנרגיה"},{k:"hunger",label:"רעב"},{k:"sleep",label:"שינה"},{k:"stress",label:"לחץ"},{k:"carbs",label:"פחמימה"}];
+
+  var db = null, cfg = { cycleStart:"2026-10-25", rhrBaseline:null };
+  var plan = defaultPlan(), planDirty = false;
+  var days = {}, measures = {}, perf = {}, sets = {}, doneDb = {};
+  var cur = iso(new Date()), weekAnchor = iso(new Date());
+  var draft = {}, measPick = "waist", moodPick = "energy", exPick = null, ready = false;
+  var openEx = {}, setTimers = {};
+
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function defaultPlan(){ return { workouts: clone(DEFAULT_WORKOUTS), schedule: clone(DEFAULT_SCHEDULE) }; }
+  function iso(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+  function parse(s){ var p=String(s).split("-"); return new Date(+p[0],+p[1]-1,+p[2]); }
+  function addDays(s,n){ var d=parse(s); d.setDate(d.getDate()+n); return iso(d); }
+  function fmt(s){ var d=parse(s); return d.getDate()+"."+(d.getMonth()+1); }
+  function dayNum(s){ return parse(s).getDay(); }
+  function diffDays(a,b){ return Math.round((parse(a)-parse(b))/86400000); }
+  function weekStart(s){ return addDays(s,-dayNum(s)); }
+  function el(id){ return document.getElementById(id); }
+  function text(n,s){ n.textContent = (s==null?"":String(s)); }
+  function num(v){ return (v===""||v===null||v===undefined)?null:+v; }
+  function has(v){ return v!==null&&v!==undefined&&v!==""; }
+  // The part before the first comma names the exercise, the rest is the prescription.
+  function exKey(item){ return String(item).split(",")[0].trim(); }
+
+  function cycleOf(d){ var n=diffDays(d,cfg.cycleStart); if(n<0) return null;
+    var wk=Math.floor(n/7); return { week:wk+1, idx:wk%4, pos:CYCLE[wk%4], cycle:Math.floor(wk/4)+1 }; }
+  function workoutKeyFor(d){ var dn=dayNum(d);
+    for(var i=0;i<KEYS.length;i++) if(plan.schedule[KEYS[i]]===dn) return KEYS[i]; return null; }
+  function planFor(d){
+    var w = plan.workouts[workoutKeyFor(d)];
+    if (!w) return { rest:true, name:"מנוחה", kind:"התאוששות", drill:["הליכה קלה בסדר גמור","שינה 8 שעות"] };
+    var c=cycleOf(d), dl = c && c.pos.key==="deload";
+    var drill = (dl && w.deload && w.deload.length) ? w.deload : (w.load||[]);
+    return { rest:false, name:w.name, kind:w.kind, deload:dl, drill:drill,
+      peak: (c && c.pos.key==="peak" && w.peak) ? w.peak : null };
+  }
+  function sortedDays(){ return Object.keys(days).sort(); }
+  function avg(a){ return a.length ? a.reduce(function(s,x){return s+x;},0)/a.length : null; }
+  function recent(f,n){ var out=[],ks=sortedDays();
+    for(var i=ks.length-1;i>=0&&out.length<n;i--){ var v=days[ks[i]][f];
+      if(v!==null&&v!==undefined&&v!=="") out.push({date:ks[i],v:+v}); } return out; }
+  function baseline(){ if(cfg.rhrBaseline) return +cfg.rhrBaseline;
+    var all=sortedDays().map(function(k){return days[k].rhr;}).filter(Boolean).map(Number);
+    if(all.length<5) return null; var s=all.slice().sort(function(a,b){return a-b;});
+    return Math.round(s[Math.floor(s.length/2)]); }
+
+  function buildFlags(){
+    var out=[], base=baseline(), r3=recent("rhr",3);
+    if(base&&r3.length===3&&r3.every(function(x){return x.v>=base+7;}))
+      out.push({bad:1,t:"דופק המנוחה גבוה שלושה ימים ברצף",
+        d:"הבסיס הוא "+base+", ונמדד "+r3.map(function(x){return x.v;}).join(", ")+". קח את הדילואד מוקדם."});
+    var h=recent("hunger",7);
+    if(h.length>=5&&avg(h.map(function(x){return x.v;}))>=4)
+      out.push({bad:1,t:"רעב גבוה שבוע שלם",
+        d:"ממוצע "+avg(h.map(function(x){return x.v;})).toFixed(1)+" מתוך 5. זה הסימן המוקדם לאכילה בחסר, תוסיף אוכל עכשיו."});
+    var e=recent("energy",5);
+    if(e.length>=4&&avg(e.map(function(x){return x.v;}))<=2.5)
+      out.push({bad:1,t:"אנרגיה נמוכה חמישה ימים",
+        d:"ממוצע "+avg(e.map(function(x){return x.v;})).toFixed(1)+" מתוך 5. בדוק אוכל ושינה לפני שתוסיף עומס."});
+    var w=recent("weight",21);
+    if(w.length>=8){ var late=avg(w.slice(0,5).map(function(x){return x.v;})), early=avg(w.slice(-5).map(function(x){return x.v;}));
+      if(early-late>=1) out.push({bad:1,t:"ירידה של "+(early-late).toFixed(1)+" ק״ג",
+        d:"מ־"+early.toFixed(1)+" ל־"+late.toFixed(1)+". אם לא התכוונת לזה, אתה בגרעון."}); }
+    var c=recent("carbs",5);
+    if(c.length>=4&&avg(c.map(function(x){return x.v;}))<4)
+      out.push({bad:1,t:"מנות פחמימה מתחת ליעד",
+        d:"ממוצע "+avg(c.map(function(x){return x.v;})).toFixed(1)+" מתוך 6. זו הסיבה המרכזית לקריסות הקודמות."});
+    if(!out.length){ var n=sortedDays().length;
+      out.push({bad:0,t:n?"אין התראות":"אין עדיין נתונים",
+        d:n?"המדדים בטווח. תמשיך למלא, זה מה שנותן התראה מוקדמת.":"תמלא את היום הראשון ונתחיל לצבור מגמה."}); }
+    return out;
+  }
+
+  function strip(box, items){
+    box.innerHTML = "";
+    items.forEach(function(it){
+      var d=document.createElement("div");
+      var l=document.createElement("div"); l.className="l"; l.textContent=it[1];
+      var v=document.createElement("div"); v.className="v"+(it[2]?" "+it[2]:""); v.textContent=it[0];
+      d.appendChild(l); d.appendChild(v); box.appendChild(d);
+    });
+  }
+
+  /* ---------- done marks: stored in the db so every device sees them ---------- */
+  function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+  function lsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
+  function lsDel(k){ try { localStorage.removeItem(k); } catch(e){} }
+  function getDone(d){
+    if(doneDb[d]) return doneDb[d].slice();
+    try { return JSON.parse(lsGet("yk.done2."+d)||"[]"); } catch(e){ return []; }
+  }
+  function setDone(d,a){
+    doneDb[d]=a.slice();
+    if(!db){ lsSet("yk.done2."+d,JSON.stringify(a)); return; }
+    var ref=db.collection("done").doc(d);
+    (a.length ? ref.set({date:d,items:a}) : ref.delete())
+      .catch(function(){ note("הסימון לא נשמר, נסה שוב.",1); });
+  }
+  // Earlier versions kept marks as row numbers in this browser only. Move them to the db once.
+  function migrateOldDone(){
+    var keys=[];
+    try { for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i);
+      if(k&&(k.indexOf("yk.done.")===0||k.indexOf("yk.done2.")===0)) keys.push(k); } } catch(e){ return; }
+    keys.forEach(function(k){
+      var d=k.replace(/^yk\.done2?\./,""), arr;
+      try { arr=JSON.parse(lsGet(k)||"[]"); } catch(e){ arr=[]; }
+      var drill=planFor(d).drill;
+      var items=arr.map(function(x){ return typeof x==="number" ? drill[x] : x; }).filter(Boolean);
+      if(!doneDb[d] && items.length) setDone(d,items);
+      lsDel(k);
+    });
+  }
+
+  /* ---------- set log ---------- */
+  function setsFor(d,key){ var s=sets[d]; return (s&&s.items&&s.items[key])||[]; }
+  function lastSession(key,before){
+    var ks=Object.keys(sets).sort();
+    for(var i=ks.length-1;i>=0;i--){ if(ks[i]>=before) continue;
+      var a=setsFor(ks[i],key).filter(function(x){return has(x.w)||has(x.r);});
+      if(a.length) return {date:ks[i],sets:a}; }
+    return null;
+  }
+  function setLabel(x){ return has(x.w)&&+x.w ? x.w+"×"+(has(x.r)?x.r:"?") : (has(x.r)?x.r+" חזרות":"—"); }
+  function writeSets(d){
+    clearTimeout(setTimers[d]);
+    setTimers[d]=setTimeout(function(){
+      delete setTimers[d];
+      if(!db){ note("אין חיבור לאחסון, הסטים לא נשמרו.",1); return; }
+      var body=sets[d]||{date:d,items:{}}, items={};
+      Object.keys(body.items||{}).forEach(function(k){
+        var a=body.items[k].filter(function(x){return has(x.w)||has(x.r);});
+        if(a.length) items[k]=a; });
+      var ref=db.collection("sets").doc(d);
+      (Object.keys(items).length ? ref.set({date:d,items:items}) : ref.delete())
+        .then(function(){ note("הסטים נשמרו "+fmt(d)); })
+        .catch(function(){ note("שמירת הסטים נכשלה, נסה שוב.",1); });
+    },700);
+  }
+  function setPanel(key){
+    var p=document.createElement("div"); p.className="setp";
+    var last=lastSession(key,cur);
+    var pv=document.createElement("p"); pv.className="prev";
+    if(last){ pv.textContent="בפעם הקודמת, "+fmt(last.date)+": ";
+      var b=document.createElement("b"); b.className="ltr"; b.style.display="inline-block"; b.textContent=last.sets.map(setLabel).join(", "); pv.appendChild(b); }
+    else pv.textContent="אין עדיין רישום קודם לתרגיל הזה.";
+    p.appendChild(pv);
+    var head=document.createElement("div"); head.className="sethead";
+    ["","משקל, ק״ג","חזרות",""].forEach(function(t){ var s=document.createElement("span"); s.textContent=t; head.appendChild(s); });
+    p.appendChild(head);
+    var rows=document.createElement("div"); rows.style.display="flex"; rows.style.flexDirection="column"; rows.style.gap="8px";
+    p.appendChild(rows);
+    function list(){ sets[cur]=sets[cur]||{date:cur,items:{}}; sets[cur].items=sets[cur].items||{};
+      return (sets[cur].items[key]=sets[cur].items[key]||[]); }
+    function paint(){
+      rows.innerHTML="";
+      list().forEach(function(x,i){
+        var r=document.createElement("div"); r.className="setrow";
+        var ix=document.createElement("span"); ix.className="ix"; ix.textContent="סט "+(i+1);
+        var w=document.createElement("input"); w.type="number"; w.step="0.5"; w.inputMode="decimal"; w.placeholder="—";
+        w.value=has(x.w)?x.w:""; w.setAttribute("aria-label","משקל סט "+(i+1));
+        var rp=document.createElement("input"); rp.type="number"; rp.step="1"; rp.inputMode="numeric"; rp.placeholder="—";
+        rp.value=has(x.r)?x.r:""; rp.setAttribute("aria-label","חזרות סט "+(i+1));
+        w.addEventListener("input",function(){ x.w=num(w.value); writeSets(cur); });
+        rp.addEventListener("input",function(){ x.r=num(rp.value); writeSets(cur); });
+        var del=document.createElement("button"); del.type="button"; del.className="x"; del.textContent="✕";
+        del.setAttribute("aria-label","מחק סט "+(i+1));
+        del.addEventListener("click",function(){ list().splice(i,1); paint(); writeSets(cur); refreshSetBtn(key); });
+        r.appendChild(ix); r.appendChild(w); r.appendChild(rp); r.appendChild(del); rows.appendChild(r);
+      });
+    }
+    paint();
+    var add=document.createElement("button"); add.type="button"; add.className="link"; add.textContent="הוסף סט";
+    add.addEventListener("click",function(){
+      var a=list(), prev=a[a.length-1] || (last&&last.sets[a.length]) || (last&&last.sets[last.sets.length-1]);
+      a.push({w:prev&&has(prev.w)?prev.w:null, r:prev&&has(prev.r)?prev.r:null});
+      paint(); writeSets(cur); refreshSetBtn(key);
+      var ins=rows.querySelectorAll("input"); if(ins.length) ins[ins.length-2].focus();
+    });
+    p.appendChild(add);
+    return p;
+  }
+  var setBtns = {};
+  function refreshSetBtn(key){ var b=setBtns[key]; if(!b) return;
+    var n=setsFor(cur,key).length; b.textContent=n?(n===1?"סט אחד":n+" סטים"):"רשום סטים"; b.className="setbtn"+(n?" has":""); }
+
+  function renderToday(){
+    var p=planFor(cur), c=cycleOf(cur), today=iso(new Date());
+    text(el("todayTitle"), cur===today ? "היום" : fmt(cur));
+    text(el("todaySub"), "יום "+DAYS_HE[dayNum(cur)]+", "+fmt(cur));
+    el("goToday").hidden = (cur===today);
+    strip(el("topStrip"), [
+      [c ? (c.idx+1)+" / 4" : "—", "שבוע במחזור"],
+      [c ? c.pos.name : "טרם החל", "שלב", c && c.pos.key==="deload" ? "g" : "o"],
+      [p.rest ? "מנוחה" : p.name.replace("אימון ",""), "אימון"]
+    ]);
+
+    text(el("sName"), p.rest ? "יום מנוחה" : p.name+", "+p.kind);
+    text(el("sSub"), c ? c.pos.note : "המחזור מתחיל ב־"+fmt(cfg.cycleStart));
+
+    var box=el("sDrill"); box.innerHTML=""; setBtns={};
+    var done=getDone(cur);
+    function count(){ var d=getDone(cur); text(el("drillCount"),
+      p.drill.filter(function(x){return d.indexOf(x)>=0;}).length+" מתוך "+p.drill.length); }
+    p.drill.forEach(function(item){
+      var key=exKey(item);
+      var r=document.createElement("div");
+      r.className="row ex"+(done.indexOf(item)>=0?" done":"");
+      var ck=document.createElement("span"); ck.className="ck";
+      var tx=document.createElement("span"); tx.className="tx"; tx.textContent=item;
+      r.appendChild(ck); r.appendChild(tx);
+      r.setAttribute("role","checkbox"); r.tabIndex=0;
+      r.setAttribute("aria-checked",done.indexOf(item)>=0?"true":"false");
+      function toggle(){
+        var a=getDone(cur), at=a.indexOf(item);
+        if(at>=0) a.splice(at,1); else a.push(item);
+        setDone(cur,a); r.classList.toggle("done",at<0); r.setAttribute("aria-checked",at<0?"true":"false"); count();
+      }
+      r.addEventListener("click",toggle);
+      r.addEventListener("keydown",function(e){ if(e.target!==r) return; if(e.key===" "||e.key==="Enter"){ e.preventDefault(); toggle(); } });
+      box.appendChild(r);
+      if(!p.rest){
+        var sb=document.createElement("button"); sb.type="button"; setBtns[key]=sb;
+        r.appendChild(sb); refreshSetBtn(key);
+        var panel=null, ok=cur+"|"+key;
+        function openP(){ panel=setPanel(key); r.after(panel); r.classList.add("open"); }
+        sb.addEventListener("click",function(e){ e.stopPropagation();
+          if(panel){ panel.remove(); panel=null; r.classList.remove("open"); delete openEx[ok]; }
+          else { openEx[ok]=1; openP(); } });
+        if(openEx[ok]) openP();
+      }
+    });
+    count();
+    var pk=el("sPeak"); pk.hidden=!p.peak; text(pk,p.peak||"");
+
+    strip(el("sFuel"), [
+      [p.rest?"2,750":"3,300","קלוריות"],
+      [(p.rest?"300":"410")+" ג׳","פחמימה"],
+      ["150 ג׳","חלבון"]
+    ]);
+
+    var al=el("alerts"); al.innerHTML="";
+    buildFlags().forEach(function(a){
+      var w=document.createElement("div"); w.className="al"+(a.bad?"":" ok");
+      var d=document.createElement("span"); d.className="d";
+      var c2=document.createElement("div");
+      var s=document.createElement("strong"); s.textContent=a.t;
+      var pp=document.createElement("p"); pp.textContent=a.d;
+      c2.appendChild(s); c2.appendChild(pp); w.appendChild(d); w.appendChild(c2); al.appendChild(w);
+    });
+  }
+  function typingInDrill(){ var a=document.activeElement; return !!(a&&a.tagName==="INPUT"&&el("sDrill").contains(a)); }
+  function goDay(d){ cur=d; loadDraft(); renderToday(); window.scrollTo(0,0); }
+
+  function buildWorkoutOptions(){
+    var s=el("fWorkout"), v=s.value; s.innerHTML="";
+    var opts=[["","לא נרשם"]].concat(KEYS.map(function(k){ return [plan.workouts[k].name,plan.workouts[k].name]; }),
+      [["מנוחה","מנוחה"],["אימון חלקי","אימון חלקי"],["אחר","אחר"]]);
+    opts.forEach(function(o){ var op=document.createElement("option"); op.value=o[0]; op.textContent=o[1]; s.appendChild(op); });
+    if(v && !opts.some(function(o){return o[0]===v;})){ var op=document.createElement("option"); op.value=v; op.textContent=v; s.appendChild(op); }
+    s.value=v;
+  }
+
+  function buildScales(){
+    Object.keys(SCALES).forEach(function(id){
+      var box=el(id); box.innerHTML="";
+      for(var i=1;i<=5;i++)(function(v){
+        var b=document.createElement("button"); b.type="button"; b.textContent=v; b.setAttribute("aria-pressed","false");
+        b.addEventListener("click",function(){ var f=SCALES[id];
+          draft[f]=(draft[f]===v)?null:v; paintScales(); el("savedMsg").hidden=true; });
+        box.appendChild(b);
+      })(i);
+    });
+  }
+  function paintScales(){
+    Object.keys(SCALES).forEach(function(id){ var v=draft[SCALES[id]];
+      Array.prototype.forEach.call(el(id).children,function(b,i){ b.setAttribute("aria-pressed",(i+1)===v?"true":"false"); }); });
+  }
+  function loadDraft(){
+    var d=days[cur]||{};
+    draft={ workout:d.workout||"", energy:d.energy||null, sleep:d.sleep||null, hunger:d.hunger||null,
+      stress:d.stress||null, rhr:d.rhr||"", weight:d.weight||"", carbs:(d.carbs===0?0:(d.carbs||"")), note:d.note||"" };
+    el("entryDate").value=cur;
+    var s=el("fWorkout");
+    if(draft.workout && !Array.prototype.some.call(s.options,function(o){return o.value===draft.workout;})){
+      var op=document.createElement("option"); op.value=draft.workout; op.textContent=draft.workout; s.appendChild(op); }
+    s.value=draft.workout;
+    el("fRhr").value=draft.rhr; el("fWeight").value=draft.weight;
+    el("fCarbs").value=draft.carbs; el("fNote").value=draft.note;
+    paintScales(); el("savedMsg").hidden=true;
+  }
+
+  function renderWeek(){
+    var st=weekStart(weekAnchor), c=cycleOf(st);
+    text(el("weekTitle"), fmt(st)+" עד "+fmt(addDays(st,6))+(c?", "+c.pos.name:""));
+    var t=el("weekTable");
+    t.innerHTML="<thead><tr><th>יום</th><th>מתוכנן</th><th>בוצע</th><th class='n'>תרגילים</th><th class='n'>אנרגיה</th><th class='n'>דופק</th><th class='n'>משקל</th><th class='n'>רעב</th><th class='n'>פחמ׳</th></tr></thead>";
+    var tb=document.createElement("tbody"), today=iso(new Date());
+    for(var i=0;i<7;i++)(function(ds){
+      var d=days[ds]||{}, p=planFor(ds), tr=document.createElement("tr");
+      tr.className="tap"+(ds===today?" now":"");
+      function td(v,cls){ var c2=document.createElement("td"); if(cls) c2.className=cls;
+        c2.textContent=(v===null||v===undefined||v==="")?"—":v;
+        if(c2.textContent==="—") c2.classList.add("q"); return c2; }
+      var dn=getDone(ds).filter(function(x){return p.drill.indexOf(x)>=0;}).length;
+      tr.appendChild(td(DAYS_HE[dayNum(ds)]+" "+fmt(ds)));
+      tr.appendChild(td(p.rest?"מנוחה":p.name,"name"));
+      tr.appendChild(td(d.workout||""));
+      tr.appendChild(td(p.rest||!dn?"":dn+"/"+p.drill.length,"n"));
+      tr.appendChild(td(d.energy,"n")); tr.appendChild(td(d.rhr,"n"));
+      tr.appendChild(td(d.weight,"n")); tr.appendChild(td(d.hunger,"n"));
+      tr.appendChild(td(d.carbs===0?0:d.carbs,"n"));
+      tr.addEventListener("click",function(){ cur=ds; loadDraft(); renderToday(); show("today"); });
+      tb.appendChild(tr);
+    })(addDays(st,i));
+    t.appendChild(tb);
+
+    var vals={energy:[],rhr:[],hunger:[],carbs:[],weight:[]}, trained=0;
+    for(var j=0;j<7;j++){ var dd=days[addDays(st,j)]; if(!dd) continue;
+      if(dd.workout&&dd.workout.indexOf("אימון")===0) trained++;
+      Object.keys(vals).forEach(function(k){ if(dd[k]||dd[k]===0) vals[k].push(+dd[k]); }); }
+    function f1(v,sfx){ return v===null?"—":(Math.round(v*10)/10)+(sfx||""); }
+    strip(el("weekSummary"), [
+      [String(trained),"אימונים"], [f1(avg(vals.energy)),"אנרגיה"],
+      [f1(avg(vals.carbs),"/6"),"פחמימה"], [f1(avg(vals.weight)),"משקל"]
+    ]);
+  }
+
+  function dateHeads(ks,onPick){
+    var tr=document.createElement("tr"), th=document.createElement("th"); th.textContent="מדד"; tr.appendChild(th);
+    ks.forEach(function(k){ var h=document.createElement("th"); h.className="n hd";
+      var b=document.createElement("button"); b.type="button"; b.textContent=fmt(k);
+      b.setAttribute("aria-label","ערוך מדידה מ־"+fmt(k));
+      b.addEventListener("click",function(){ onPick(k); }); h.appendChild(b); tr.appendChild(h); });
+    var th2=document.createElement("thead"); th2.appendChild(tr); return th2;
+  }
+  function renderMeasures(){
+    var ks=Object.keys(measures).sort(), t=el("measTable");
+    t.innerHTML=""; var hd=dateHeads(ks,function(k){ openMeas(k); });
+    var chg=document.createElement("th"); chg.className="n"; chg.textContent="שינוי"; hd.firstChild.appendChild(chg);
+    t.appendChild(hd);
+    var tb=document.createElement("tbody");
+    MEASURES.forEach(function(m){
+      var tr=document.createElement("tr"), t0=document.createElement("td");
+      t0.textContent=m.label; t0.className="name"; tr.appendChild(t0);
+      var first=null,last=null;
+      ks.forEach(function(k){ var v=measures[k][m.k], td=document.createElement("td"); td.className="n";
+        td.textContent=(v||v===0)?v:"—"; if(td.textContent==="—") td.classList.add("q");
+        if(v||v===0){ if(first===null) first=+v; last=+v; } tr.appendChild(td); });
+      var d=document.createElement("td"); d.className="n";
+      if(first!==null&&ks.length>1){ var diff=last-first, good=(m.k==="waist")?diff<0:diff>0;
+        d.textContent=(diff>0?"+":diff<0?"−":"")+Math.abs(diff).toFixed(1);
+        d.className="n "+(diff===0?"q":(good?"up":"dn"));
+      } else { d.textContent="—"; d.classList.add("q"); }
+      tr.appendChild(d); tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+
+    var k2=Object.keys(perf).sort(), p=el("perfTable");
+    p.innerHTML=""; p.appendChild(dateHeads(k2,function(k){ openPerf(k); }));
+    var pb=document.createElement("tbody");
+    PERF.forEach(function(m){
+      var tr=document.createElement("tr"), t0=document.createElement("td");
+      t0.textContent=m.label; t0.className="name"; tr.appendChild(t0);
+      k2.forEach(function(k){ var v=perf[k][m.k], td=document.createElement("td"); td.className="n";
+        td.textContent=(v||v===0)?v:"—"; if(td.textContent==="—") td.classList.add("q"); tr.appendChild(td); });
+      pb.appendChild(tr);
+    });
+    p.appendChild(pb);
+  }
+
+  function lineChart(mount, pts, opts){
+    opts=opts||{}; mount.innerHTML="";
+    if(!pts.length){ var e=document.createElement("p"); e.className="empty";
+      e.textContent=opts.empty||"אין עדיין נתונים"; mount.appendChild(e); return; }
+    // Draw at the real on-screen width so labels keep their true pixel size on a phone.
+    var app=document.querySelector(".app"), avail=(mount.clientWidth||(app?app.clientWidth-32:360));
+    var W=Math.max(300,Math.min(640,avail)),H=200,ml=8,mr=40,mt=24,mb=24, iw=W-ml-mr, ih=H-mt-mb;
+    var xs=pts.map(function(p){return parse(p.x).getTime();}), ys=pts.map(function(p){return p.y;});
+    var all=ys.concat(opts.threshold?[opts.threshold]:[]);
+    var lo=Math.min.apply(null,all), hi=Math.max.apply(null,all);
+    if(hi===lo){ hi=lo+1; lo-=1; }
+    var pad=(hi-lo)*0.2; lo-=pad; hi+=pad;
+    var x0=Math.min.apply(null,xs), x1=Math.max.apply(null,xs); if(x1===x0) x1=x0+86400000;
+    function X(t){ return ml+iw-((t-x0)/(x1-x0))*iw; }
+    function Y(v){ return mt+ih-((v-lo)/(hi-lo))*ih; }
+    var ns="http://www.w3.org/2000/svg";
+    function mk(tag,a){ var n=document.createElementNS(ns,tag); Object.keys(a).forEach(function(k){n.setAttribute(k,a[k]);}); return n; }
+    var svg=mk("svg",{viewBox:"0 0 "+W+" "+H,"class":"chart",role:"img","aria-label":opts.label||"גרף"});
+    var col=opts.color||"var(--blue)";
+    for(var i=0;i<=3;i++){ var v=lo+(hi-lo)*i/3, y=Y(v);
+      svg.appendChild(mk("line",{x1:ml,x2:ml+iw,y1:y,y2:y,stroke:"var(--line)","stroke-width":1}));
+      var tl=mk("text",{x:ml+iw+6,y:y+4,fill:"var(--grey)","font-size":12,"text-anchor":"start"});
+      tl.textContent=(hi-lo>8?Math.round(v):(hi-lo>3?v.toFixed(1):v.toFixed(2).replace(/0$/,""))); svg.appendChild(tl); }
+    if(opts.threshold) svg.appendChild(mk("line",{x1:ml,x2:ml+iw,y1:Y(opts.threshold),y2:Y(opts.threshold),
+      stroke:"var(--red)","stroke-width":1.5,"stroke-dasharray":"5 4"}));
+    var dl=pts.map(function(p,i){ return (i?"L":"M")+X(parse(p.x).getTime()).toFixed(1)+","+Y(p.y).toFixed(1); }).join(" ");
+    svg.appendChild(mk("path",{d:dl,fill:"none",stroke:col,"stroke-width":2.5,"stroke-linejoin":"round","stroke-linecap":"round"}));
+    if(pts.length<=16) pts.forEach(function(p){
+      var over=opts.threshold&&p.y>=opts.threshold;
+      var c=mk("circle",{cx:X(parse(p.x).getTime()),cy:Y(p.y),r:4.5,fill:over?"var(--red)":col,stroke:"var(--bg)","stroke-width":2});
+      var tt=document.createElementNS(ns,"title"); tt.textContent=fmt(p.x)+", "+Math.round(p.y*10)/10; c.appendChild(tt); svg.appendChild(c); });
+    var lp=pts[pts.length-1];
+    var lx=X(parse(lp.x).getTime());
+    var lbl=mk("text",{x:lx<ml+30?ml:(lx>ml+iw-30?ml+iw:lx),y:Y(lp.y)-12,fill:"var(--ink)","font-size":15,"font-weight":800,
+      "text-anchor":lx<ml+30?"start":(lx>ml+iw-30?"end":"middle")});
+    lbl.textContent=Math.round(lp.y*10)/10; svg.appendChild(lbl);
+    [pts[0],lp].forEach(function(p,i){ if(pts.length<2&&i) return;
+      var t=mk("text",{x:X(parse(p.x).getTime()),y:H-4,fill:"var(--grey)","font-size":12,"text-anchor":i?"start":"end"});
+      t.textContent=fmt(p.x); svg.appendChild(t); });
+    mount.appendChild(svg);
+  }
+
+  function pills(box,list,sel,pick){
+    if(!box.children.length) list.forEach(function(m){
+      var b=document.createElement("button"); b.type="button"; b.textContent=m.label;
+      b.addEventListener("click",function(){ pick(m.k); }); box.appendChild(b); });
+    Array.prototype.forEach.call(box.children,function(b,i){ b.setAttribute("aria-pressed",list[i].k===sel?"true":"false"); });
+  }
+
+  function renderExercise(){
+    var ks=Object.keys(sets).sort(), seen={}, order=[];
+    for(var i=ks.length-1;i>=0;i--) Object.keys((sets[ks[i]]&&sets[ks[i]].items)||{}).forEach(function(k){
+      if(!seen[k]&&setsFor(ks[i],k).some(function(x){return has(x.w)||has(x.r);})){ seen[k]=1; order.push(k); } });
+    var box=el("exPick"); box.innerHTML="";
+    if(!order.length){ text(el("exStat"),""); el("exTable").innerHTML="";
+      lineChart(el("chartEx"),[],{empty:"עוד לא נרשמו סטים. במסך היום לחץ על \"רשום סטים\" ליד תרגיל."}); return; }
+    if(!exPick||!seen[exPick]) exPick=order[0];
+    order.forEach(function(k){ var b=document.createElement("button"); b.type="button"; b.textContent=k;
+      b.setAttribute("aria-pressed",k===exPick?"true":"false");
+      b.addEventListener("click",function(){ exPick=k; renderExercise(); }); box.appendChild(b); });
+    var sess=ks.map(function(d){ return {d:d,s:setsFor(d,exPick).filter(function(x){return has(x.w)||has(x.r);})}; })
+      .filter(function(x){return x.s.length;});
+    var byW=sess.some(function(x){ return x.s.some(function(y){return +y.w>0;}); });
+    var pts=sess.map(function(x){ var v=Math.max.apply(null,x.s.map(function(y){ return byW?(+y.w||0):(+y.r||0); }));
+      return {x:x.d,y:v}; });
+    var best=null;
+    sess.forEach(function(x){ x.s.forEach(function(y){ var v=byW?(+y.w||0):(+y.r||0), r=+y.r||0;
+      if(!best||v>best.v||(v===best.v&&r>best.r)) best={v:v,r:r,d:x.d}; }); });
+    text(el("exStat"), best ? (byW ? "שיא: "+best.v+" ק״ג × "+best.r+" ב־"+fmt(best.d)+". הגרף מראה את הסט הכבד בכל אימון."
+      : "שיא: "+best.v+" חזרות ב־"+fmt(best.d)+". הגרף מראה את הסט הטוב בכל אימון.") : "");
+    lineChart(el("chartEx"),pts,{label:"התקדמות "+exPick,color:"var(--blue)"});
+    var t=el("exTable");
+    t.innerHTML="<thead><tr><th>תאריך</th><th>סטים</th><th class='n'>"+(byW?"נפח, ק״ג":"סך חזרות")+"</th></tr></thead>";
+    var tb=document.createElement("tbody");
+    sess.slice(-8).reverse().forEach(function(x){
+      var tr=document.createElement("tr");
+      var a=document.createElement("td"); a.className="n"; a.textContent=fmt(x.d);
+      var b=document.createElement("td"); b.className="wrap n"; b.textContent=x.s.map(setLabel).join(", ");
+      var vol=x.s.reduce(function(s,y){ return s+(byW?(+y.w||0)*(+y.r||0):(+y.r||0)); },0);
+      var c=document.createElement("td"); c.className="n"; c.textContent=Math.round(vol*10)/10;
+      tr.appendChild(a); tr.appendChild(b); tr.appendChild(c); tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+  }
+
+  function renderTrends(){
+    var ks=sortedDays();
+    lineChart(el("chartWeight"), ks.filter(function(k){return days[k].weight;})
+      .map(function(k){return {x:k,y:+days[k].weight};}), {label:"מגמת משקל",empty:"עוד לא נרשם משקל"});
+    var w=recent("weight",1);
+    text(el("wStat"), w.length?"משקל אחרון "+w[0].v+" ק״ג ב־"+fmt(w[0].date):"משקל");
+    renderExercise();
+    var base=baseline();
+    lineChart(el("chartRhr"), ks.filter(function(k){return days[k].rhr;})
+      .map(function(k){return {x:k,y:+days[k].rhr};}),
+      {label:"דופק מנוחה",color:"var(--red)",threshold:base?base+7:null,empty:"עוד לא נרשם דופק מנוחה"});
+    text(el("rStat"), base?"דופק מנוחה. בסיס "+base+", סף "+(base+7):"דופק מנוחה");
+    if(document.activeElement!==el("fBaseline")) el("fBaseline").value=cfg.rhrBaseline||"";
+    pills(el("measPick"),MEASURES,measPick,function(k){ measPick=k; renderTrends(); });
+    lineChart(el("chartMeas"), Object.keys(measures).sort()
+      .filter(function(k){return measures[k][measPick]||measures[k][measPick]===0;})
+      .map(function(k){return {x:k,y:+measures[k][measPick]};}),
+      {label:"היקף",color:"var(--green)",empty:"אין עדיין מדידות"});
+    pills(el("moodPick"),MOODS,moodPick,function(k){ moodPick=k; renderTrends(); });
+    var bw={};
+    ks.forEach(function(k){ var v=days[k][moodPick];
+      if(v===null||v===undefined||v==="") return;
+      (bw[weekStart(k)]=bw[weekStart(k)]||[]).push(+v); });
+    lineChart(el("chartMood"), Object.keys(bw).sort().map(function(k){
+      return {x:k,y:Math.round(avg(bw[k])*10)/10}; }), {label:"ממוצע שבועי",color:"var(--orange)",empty:"אין עדיין נתונים"});
+  }
+
+  /* ---------- plan editor ---------- */
+  function lines(v){ return String(v||"").split("\n").map(function(s){return s.trim();}).filter(Boolean); }
+  function fieldBox(labelText,ctrl){
+    var d=document.createElement("div"); d.className="fld";
+    var l=document.createElement("label"); l.textContent=labelText; l.htmlFor=ctrl.id;
+    d.appendChild(l); d.appendChild(ctrl); return d;
+  }
+  function renderPlanForm(){
+    el("plStart").value=cfg.cycleStart;
+    var box=el("planForms"); box.innerHTML="";
+    KEYS.forEach(function(k){
+      var w=plan.workouts[k], sec=document.createElement("div"); sec.className="wk";
+      var h=document.createElement("h2"); h.textContent=w.name||"אימון"; sec.appendChild(h);
+      var ls=document.createElement("div"); ls.className="list";
+      var nm=document.createElement("input"); nm.id="pl-"+k+"-name"; nm.value=w.name||"";
+      nm.addEventListener("input",function(){ h.textContent=nm.value||"אימון"; });
+      var kd=document.createElement("input"); kd.id="pl-"+k+"-kind"; kd.value=w.kind||"";
+      var dy=document.createElement("select"); dy.id="pl-"+k+"-day";
+      [["","לא מתוכנן"]].concat(DAYS_HE.map(function(n,i){ return [String(i),"יום "+n]; })).forEach(function(o){
+        var op=document.createElement("option"); op.value=o[0]; op.textContent=o[1]; dy.appendChild(op); });
+      dy.value=(plan.schedule[k]===null||plan.schedule[k]===undefined)?"":String(plan.schedule[k]);
+      var ld=document.createElement("textarea"); ld.id="pl-"+k+"-load"; ld.className="tall"; ld.value=(w.load||[]).join("\n");
+      var de=document.createElement("textarea"); de.id="pl-"+k+"-deload"; de.value=(w.deload||[]).join("\n");
+      var pk=document.createElement("input"); pk.id="pl-"+k+"-peak"; pk.value=w.peak||""; pk.placeholder="אין שינוי בשבוע השיא";
+      var two=document.createElement("div"); two.className="three";
+      [fieldBox("שם",nm),fieldBox("סוג",kd)].forEach(function(f){ f.style.border="none"; f.style.paddingBottom="0"; two.appendChild(f); });
+      var wrap=document.createElement("div"); wrap.className="fld"; wrap.appendChild(two);
+      ls.appendChild(wrap);
+      ls.appendChild(fieldBox("יום בשבוע",dy));
+      var lf=fieldBox("תרגילים, שורה לכל תרגיל",ld);
+      var hint=document.createElement("span"); hint.className="hint";
+      hint.textContent="שם התרגיל לפני הפסיק, ההנחיה אחריו. רישום הסטים וההתקדמות נשמרים לפי השם.";
+      lf.appendChild(hint); ls.appendChild(lf);
+      ls.appendChild(fieldBox("בשבוע דילואד, שורה לכל תרגיל. ריק אומר אותם תרגילים",de));
+      ls.appendChild(fieldBox("הערה לשבוע השיא",pk));
+      sec.appendChild(ls); box.appendChild(sec);
+    });
+    planDirty=false;
+  }
+  function readPlanForm(){
+    var p={ workouts:{}, schedule:{} };
+    KEYS.forEach(function(k){
+      p.workouts[k]={ name:el("pl-"+k+"-name").value.trim()||plan.workouts[k].name,
+        kind:el("pl-"+k+"-kind").value.trim(), load:lines(el("pl-"+k+"-load").value),
+        deload:lines(el("pl-"+k+"-deload").value) };
+      var pk=el("pl-"+k+"-peak").value.trim(); if(pk) p.workouts[k].peak=pk;
+      var dv=el("pl-"+k+"-day").value; p.schedule[k]=dv===""?null:+dv;
+    });
+    return p;
+  }
+  function planClash(p){ var used={}, clash=null;
+    KEYS.forEach(function(k){ var d=p.schedule[k]; if(d===null) return;
+      if(used[d]!==undefined) clash=DAYS_HE[d]; used[d]=k; }); return clash; }
+  el("planForms").addEventListener("input",function(){ planDirty=true; el("planMsg").hidden=true; });
+  el("plStart").addEventListener("input",function(){ planDirty=true; el("planMsg").hidden=true; });
+  el("savePlan").addEventListener("click",function(){
+    var p=readPlanForm(), clash=planClash(p), wn=el("planWarn");
+    if(clash){ wn.hidden=false; text(wn,"שני אימונים מתוכננים ליום "+clash+". בחר יום אחר לאחד מהם."); return; }
+    wn.hidden=true;
+    var st=el("plStart").value;
+    if(!db){ note("אין חיבור לאחסון, התוכנית לא נשמרה.",1); wn.hidden=false; text(wn,"אין חיבור לאחסון, התוכנית לא נשמרה."); return; }
+    var btn=this; btn.disabled=true;
+    db.collection("config").doc("plan").set(p).then(function(){
+      plan=p; planDirty=false; btn.disabled=false; el("planMsg").hidden=false;
+      if(st && st!==cfg.cycleStart) saveCfg({cycleStart:st});
+      buildWorkoutOptions(); loadDraft(); renderAll();
+    }).catch(function(){ btn.disabled=false; wn.hidden=false; text(wn,"השמירה נכשלה, נסה שוב."); });
+  });
+  var resetArmed=null;
+  el("resetPlan").addEventListener("click",function(){
+    var b=this;
+    if(!resetArmed){ text(b,"לחץ שוב כדי לשחזר"); resetArmed=setTimeout(function(){ resetArmed=null; text(b,"שחזר תוכנית מקורית"); },4000); return; }
+    clearTimeout(resetArmed); resetArmed=null; text(b,"שחזר תוכנית מקורית");
+    plan=defaultPlan(); renderPlanForm(); planDirty=true; el("planMsg").hidden=true;
+    text(el("planWarn"),"התוכנית המקורית נטענה לטופס. לחץ על שמור תוכנית כדי להחיל אותה."); el("planWarn").hidden=false;
+  });
+
+  function renderAll(){ renderToday(); renderWeek(); renderMeasures(); renderTrends(); }
+
+  var VIEWS=["today","week","measures","trends","plan"];
+  function show(name){
+    VIEWS.forEach(function(v){ el("view-"+v).hidden=(v!==name);
+      el("tab-"+v).setAttribute("aria-selected",v===name?"true":"false"); });
+    lsSet("yk.tab",name);
+    if(name==="trends") renderTrends();
+    if(name==="week") renderWeek();
+    if(name==="plan" && !planDirty) renderPlanForm();
+    window.scrollTo(0,0);
+  }
+  VIEWS.forEach(function(v){ el("tab-"+v).addEventListener("click",function(){ show(v); }); });
+  el("prevWeek").addEventListener("click",function(){ weekAnchor=addDays(weekAnchor,-7); renderWeek(); });
+  el("nextWeek").addEventListener("click",function(){ weekAnchor=addDays(weekAnchor,7); renderWeek(); });
+  el("prevDay").addEventListener("click",function(){ goDay(addDays(cur,-1)); });
+  el("nextDay").addEventListener("click",function(){ goDay(addDays(cur,1)); });
+  el("goToday").addEventListener("click",function(){ goDay(iso(new Date())); });
+
+  function note(m,bad){ var f=el("foot"); f.textContent=m; f.style.color=bad?"var(--red)":"var(--grey)"; }
+
+  el("entryDate").addEventListener("change",function(){ if(this.value){ cur=this.value; loadDraft(); renderToday(); } });
+  ["fWorkout","fRhr","fWeight","fCarbs","fNote"].forEach(function(id){
+    el(id).addEventListener("input",function(){
+      draft[{fWorkout:"workout",fRhr:"rhr",fWeight:"weight",fCarbs:"carbs",fNote:"note"}[id]]=this.value;
+      el("savedMsg").hidden=true; });
+  });
+  el("saveDay").addEventListener("click",function(){
+    if(!db){ note("אין חיבור לאחסון, השינוי לא נשמר.",1); return; }
+    var body={ date:cur, workout:draft.workout||"", note:draft.note||"", energy:draft.energy||null,
+      sleep:draft.sleep||null, hunger:draft.hunger||null, stress:draft.stress||null,
+      rhr:num(draft.rhr), weight:num(draft.weight), carbs:num(draft.carbs) };
+    var btn=this; btn.disabled=true;
+    db.collection("days").doc(cur).set(body).then(function(){
+      days[cur]=body; el("savedMsg").hidden=false; btn.disabled=false;
+      renderToday(); renderWeek(); note("נשמר "+fmt(cur));
+    }).catch(function(e){ btn.disabled=false;
+      note(e&&e.code==="not_granted"?"אין הרשאת כתיבה בתצוגה הזו.":"השמירה נכשלה, נסה שוב.",1); });
+  });
+  el("clearDay").addEventListener("click",function(){
+    if(!db) return;
+    db.collection("days").doc(cur).delete().then(function(){
+      delete days[cur]; loadDraft(); renderToday(); renderWeek(); note("היום נמחק");
+    }).catch(function(){ note("המחיקה נכשלה.",1); });
+  });
+  function saveCfg(p){ Object.keys(p).forEach(function(k){ cfg[k]=p[k]; });
+    if(db) db.collection("config").doc("main").set(cfg).catch(function(){ note("ההגדרה לא נשמרה.",1); }); }
+  el("fBaseline").addEventListener("change",function(){ saveCfg({rhrBaseline:num(this.value)}); renderTrends(); renderToday(); });
+  el("calcBaseline").addEventListener("click",function(){
+    var all=sortedDays().map(function(k){return days[k].rhr;}).filter(Boolean).map(Number);
+    if(all.length<5){ note("צריך לפחות 5 מדידות דופק.",1); return; }
+    var s=all.slice().sort(function(a,b){return a-b;});
+    saveCfg({rhrBaseline:Math.round(s[Math.floor(s.length/2)])}); renderTrends(); renderToday(); note("הבסיס עודכן");
+  });
+
+  // init: values of an existing entry (edit mode, date locked, delete offered) or null for a new one.
+  function buildForm(mount,fields,init,onSave,onDelete){
+    mount.innerHTML="";
+    var g=document.createElement("div"); g.className="three"; g.style.marginTop="14px";
+    var inputs={}, df=document.createElement("div"); df.className="fld"; df.style.border="none"; df.style.padding="0";
+    var dlb=document.createElement("label"); dlb.textContent=init?"עריכת מדידה מ־"+fmt(init.date):"תאריך";
+    var di=document.createElement("input"); di.type="date"; di.value=init?init.date:iso(new Date());
+    di.id=mount.id+"-date"; dlb.htmlFor=di.id;
+    if(init) di.disabled=true;
+    df.appendChild(dlb); df.appendChild(di); g.appendChild(df);
+    fields.forEach(function(f){
+      var d=document.createElement("div"); d.className="fld"; d.style.border="none"; d.style.padding="0";
+      var l=document.createElement("label"); l.textContent=f.label;
+      var i=document.createElement("input"); i.type="number"; i.step="0.5"; i.inputMode="decimal"; i.placeholder="—";
+      i.id=mount.id+"-"+f.k; l.htmlFor=i.id;
+      if(init&&has(init[f.k])) i.value=init[f.k];
+      inputs[f.k]=i; d.appendChild(l); d.appendChild(i); g.appendChild(d);
+    });
+    mount.appendChild(g);
+    var row=document.createElement("div"); row.className="acts";
+    var b=document.createElement("button"); b.className="btn"; b.textContent="שמור מדידה";
+    b.addEventListener("click",function(){
+      if(!di.value){ note("בחר תאריך.",1); return; }
+      var body={date:di.value};
+      fields.forEach(function(f){ body[f.k]=num(inputs[f.k].value); });
+      b.disabled=true;
+      onSave(di.value,body,function(ok){ b.disabled=false;
+        if(ok){ mount.hidden=true; note("המדידה נשמרה"); } else note("השמירה נכשלה.",1); });
+    });
+    var cx=document.createElement("button"); cx.className="link"; cx.textContent="ביטול";
+    cx.addEventListener("click",function(){ mount.hidden=true; });
+    row.appendChild(b); row.appendChild(cx);
+    if(init&&onDelete){
+      var del=document.createElement("button"); del.className="link red"; del.textContent="מחק מדידה"; var armed=null;
+      del.addEventListener("click",function(){
+        if(!armed){ del.textContent="לחץ שוב כדי למחוק"; armed=setTimeout(function(){ armed=null; del.textContent="מחק מדידה"; },4000); return; }
+        clearTimeout(armed); del.disabled=true;
+        onDelete(init.date,function(ok){ del.disabled=false;
+          if(ok){ mount.hidden=true; note("המדידה נמחקה"); } else { note("המחיקה נכשלה.",1); del.textContent="מחק מדידה"; armed=null; } });
+      });
+      row.appendChild(del);
+    }
+    mount.appendChild(row);
+    mount.hidden=false;
+    mount.scrollIntoView({block:"nearest"});
+  }
+  function storeOps(coll,map,after){
+    return {
+      save:function(date,body,done){ if(!db) return done(false);
+        db.collection(coll).doc(date).set(body).then(function(){ map[date]=body; after(); done(true); }).catch(function(){ done(false); }); },
+      del:function(date,done){ if(!db) return done(false);
+        db.collection(coll).doc(date).delete().then(function(){ delete map[date]; after(); done(true); }).catch(function(){ done(false); }); }
+    };
+  }
+  var measOps=storeOps("measures",measures,function(){ renderMeasures(); renderTrends(); });
+  var perfOps=storeOps("perf",perf,function(){ renderMeasures(); });
+  function openMeas(k){ buildForm(el("measForm"),MEASURES,k?Object.assign({date:k},measures[k]):null,measOps.save,measOps.del); }
+  function openPerf(k){ buildForm(el("perfForm"),PERF,k?Object.assign({date:k},perf[k]):null,perfOps.save,perfOps.del); }
+  el("addMeas").addEventListener("click",function(){ openMeas(null); });
+  el("addPerf").addEventListener("click",function(){ openPerf(null); });
+
+  buildWorkoutOptions(); buildScales(); loadDraft(); renderAll();
+  var t0=lsGet("yk.tab"); if(t0&&VIEWS.indexOf(t0)>=0) show(t0);
+  note("עובד מקומית, הנתונים עדיין לא מסונכרנים.");
+
+  claude.use("db").then(function(store){
+    if(!store){ note("אין אחסון בתצוגה הזו. אפשר לראות, אי אפשר לשמור.",1); return; }
+    db=store;
+    var doneLoaded=false;
+    [{n:"days",into:days},{n:"measures",into:measures},{n:"perf",into:perf},{n:"sets",into:sets},{n:"done",into:doneDb}].forEach(function(c){
+      store.collection(c.n).onSnapshot(function(snap){
+        // Keep the set being typed: the open panel edits the local copy until it is written.
+        var keep=(c.n==="sets"&&(setTimers[cur]||typingInDrill())) ? c.into[cur] : null;
+        Object.keys(c.into).forEach(function(k){ delete c.into[k]; });
+        snap.docs.forEach(function(d){ var v=d.data()||{}; c.into[d.id]=(c.n==="done")?(v.items||[]):v; });
+        if(keep) c.into[cur]=keep;
+        if(c.n==="done"&&!doneLoaded){ doneLoaded=true; migrateOldDone(); }
+        if(!ready) return;
+        if(c.n==="days"){ renderAll(); loadDraft(); }
+        else if(c.n==="measures"||c.n==="perf"){ renderMeasures(); renderTrends(); }
+        else if(c.n==="sets"){ renderTrends(); if(!typingInDrill()) renderToday(); }
+        else { renderWeek(); if(!typingInDrill()) renderToday(); }
+      }, function(e){ note("האחסון נותק, "+(e&&e.code)+".",1); });
+    });
+    store.collection("config").doc("plan").onSnapshot(function(snap){
+      if(snap.exists){ var v=snap.data()||{};
+        if(v.workouts&&v.schedule){ plan={workouts:v.workouts,schedule:v.schedule}; } }
+      else plan=defaultPlan();
+      buildWorkoutOptions();
+      if(!planDirty && !el("view-plan").hidden) renderPlanForm();
+      if(ready){ loadDraft(); renderAll(); }
+    }, function(){});
+    store.collection("config").doc("main").onSnapshot(function(snap){
+      if(snap.exists){ var v=snap.data()||{};
+        if(v.cycleStart) cfg.cycleStart=v.cycleStart;
+        cfg.rhrBaseline=(v.rhrBaseline===0?0:(v.rhrBaseline||null)); }
+      ready=true; renderAll(); loadDraft();
+      if(!planDirty && !el("view-plan").hidden) renderPlanForm();
+      note(window.claude.local ? "הנתונים נשמרים בדפדפן הזה בלבד." : "מסונכרן. הנתונים נשמרים בענן.");
+    }, function(){ ready=true; });
+    setTimeout(function(){ if(!ready){ ready=true; renderAll(); loadDraft(); } },2500);
+  }).catch(function(){ note("האחסון לא נטען.",1); });
+})();
+</script>
+
+</body></html>

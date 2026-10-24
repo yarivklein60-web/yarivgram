@@ -68,3 +68,12 @@ src/
 ה-workflow בונה עם `BASE_PATH=/yarivgram/` ומעתיק את `index.html` ל-`404.html`, כך שגם נתיבים פנימיים
 (כמו `/import` מקיצור הדרך) נטענים. בפריסה לשורש דומיין (Netlify/Vercel) אין צורך ב-`BASE_PATH`,
 אבל יש להגדיר הפניה של כל הנתיבים ל-`index.html`.
+
+## מעקב יריב (`public/tracker/`)
+
+אפליקציית מעקב האימונים שהתחילה כ־Artifact ב־claude.ai. קובץ HTML אחד, בלי build.
+Vite מעתיק את `public/` כמו שהוא, אז אחרי deploy היא זמינה ב־`/yarivgram/tracker/`.
+
+- הרצה מקומית: `npm run dev` ואז http://localhost:5173/tracker/
+- ב־claude.ai הנתונים נשמרים בענן דרך `window.claude.use("db")`. מחוץ לשם, תחליף קטן בראש הקובץ
+  מממש את אותו API מעל `localStorage` (מפתחות `yk.db.<collection>`), כך שהנתונים נשמרים בדפדפן בלבד.
