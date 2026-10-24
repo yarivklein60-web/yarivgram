@@ -4,6 +4,7 @@ import { Flame, Timer, ChevronLeft, UtensilsCrossed, Dumbbell, BookOpen } from '
 import ProgressRing from '@/components/shared/ProgressRing';
 import MacroBar from '@/components/shared/MacroBar';
 import WeeklySummary from '@/components/shared/WeeklySummary';
+import WorkoutHeatmap from '@/components/workouts/WorkoutHeatmap';
 import { FoodLog, WorkoutLog } from '@/api/entities';
 import { useUserProfile, todayStr } from '@/hooks/useUserProfile';
 import { greeting } from '@/lib/date';
@@ -28,8 +29,8 @@ export default function Home() {
 
   return (
     <div className="space-y-5">
-      <header>
-        <p className="text-muted-foreground text-sm">{new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+      <header className="hero">
+        <p className="text-sm font-medium opacity-70">{new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
         <h1 className="text-3xl font-extrabold tracking-tight">
           {greeting()}
           {profile?.name ? `, ${profile.name}` : ''} 👋
@@ -99,6 +100,8 @@ export default function Home() {
       </section>
 
       <WeeklySummary profile={profile} />
+
+      <WorkoutHeatmap />
 
       <section className="grid grid-cols-3 gap-3">
         <QuickLink to="/nutrition" icon={UtensilsCrossed} label="רישום ארוחה" />
